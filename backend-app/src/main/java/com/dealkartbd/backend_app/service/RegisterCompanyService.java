@@ -25,27 +25,27 @@ public class RegisterCompanyService {
 
     public RegisterCompanyResponse registerCompany(RegisterCompanyRequest request) {
         // 1. Check if user already exists
-        if (userRepository.existsByEmail(request.getAdminEmail())) {
+        if (userRepository.existsByEmail(request.adminEmail())) {
             throw new RuntimeException("Email already in use");
         }
 
         // 2. Create company
         Company company = new Company();
-        company.setName(request.getCompanyName());
-        company.setAddress(request.getAddress());
-        company.setRegistrationNumber(request.getRegistrationNumber());
+        company.setName(request.companyName());
+        company.setAddress(request.address());
+        company.setRegistrationNumber(request.registrationNumber());
 
         Company savedCompany = companyRepository.save(company);
 
         // 3. Get ADMIN role
-        Role adminRole = roleRepository.findByName(Role.RoleName.ADMIN)
-                .orElseThrow(() -> new RuntimeException("ADMIN role not found"));
+        Role adminRole = roleRepository.findByName(Role.RoleName.VENDOR)
+                .orElseThrow(() -> new RuntimeException("VENDOR role not found"));
 
         // 4. Create admin user
         User user = new User();
-        user.setFullName(request.getAdminName());
-        user.setEmail(request.getAdminEmail());
-        user.setPassword(passwordEncoder.encode(request.getAdminPassword()));
+        user.setFullName(request.adminName());
+        user.setEmail(request.adminEmail());
+        user.setPassword(passwordEncoder.encode(request.adminPassword()));
         user.setCompany(savedCompany);
         user.setRoles(Set.of(adminRole));
 

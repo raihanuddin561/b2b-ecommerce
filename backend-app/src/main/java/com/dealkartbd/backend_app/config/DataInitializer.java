@@ -30,5 +30,11 @@ public class DataInitializer implements ApplicationListener<ContextRefreshedEven
             employee.setName(Role.RoleName.EMPLOYEE);
             roleRepository.save(employee);
         }
+
+       /* if (roleRepository.findByName(Role.RoleName.VENDOR).isEmpty()) {
+            Role employee = new Role();
+            employee.setName(Role.RoleName.VENDOR);
+            roleRepository.save(employee);
+        }*/
     }
 }

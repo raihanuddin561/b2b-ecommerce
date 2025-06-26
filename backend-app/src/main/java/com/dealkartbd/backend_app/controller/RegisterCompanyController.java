@@ -11,13 +11,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/api/auth/register")
 @RequiredArgsConstructor
 public class RegisterCompanyController {
 
     private final RegisterCompanyService registerCompanyService;
 
-    @PostMapping("/register-company")
+    @PostMapping("/company")
     public ResponseEntity<RegisterCompanyResponse> registerCompany(
             @RequestBody RegisterCompanyRequest request) {
         RegisterCompanyResponse response = registerCompanyService.registerCompany(request);
