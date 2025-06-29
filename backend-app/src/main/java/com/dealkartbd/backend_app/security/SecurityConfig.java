@@ -1,43 +1,49 @@
 package com.dealkartbd.backend_app.security;
 
+import com.dealkartbd.backend_app.service.CustomUserDetailsService;
 import com.dealkartbd.backend_app.utils.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import static com.dealkartbd.backend_app.security.SecurityConstants.LOGIN_PATH;
 
 @RequiredArgsConstructor
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
-    private final UserDetailsService userDetailsService;
-    private final PasswordEncoder passwordEncoder;
+    private final CustomUserDetailsService customUserDetailsService;
     private final JwtUtil jwtUtil;
+    private final Environment env;
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
+            throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, AuthenticationManager authenticationManager) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, AuthenticationManager authenticationManager)
+            throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**","/login").permitAll()
+                        .requestMatchers("/api/auth/**", env.getProperty(LOGIN_PATH), "/home").permitAll()
                         .anyRequest().authenticated()
                 )
-                .addFilterBefore(new AuthFilter(authenticationManager, jwtUtil), UsernamePasswordAuthenticationFilter.class);
+                .addFilter(new CustomAuthenticationFilter(authenticationManager, jwtUtil, env))
+                .addFilterBefore(new CustomAuthorizationFilter(jwtUtil, customUserDetailsService, env),
+                        CustomAuthenticationFilter.class);
         return http.build();
     }
 }

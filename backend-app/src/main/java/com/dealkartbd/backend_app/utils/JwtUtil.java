@@ -2,6 +2,8 @@ package com.dealkartbd.backend_app.utils;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -9,6 +11,7 @@ import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+import java.security.Key;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.Date;
@@ -29,16 +32,33 @@ public class JwtUtil {
                         .map(GrantedAuthority::getAuthority).toList())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationInMs))
-                .signWith(SignatureAlgorithm.HS512, jwtSecret)
+                .signWith(getJwtSecret(), SignatureAlgorithm.HS512)
+                .compact();
+    }
+
+    public String generateToken(String username, Collection<? extends GrantedAuthority> authorities) {
+        return Jwts.builder()
+                .setSubject(username)
+                .claim("roles", authorities.stream().map(GrantedAuthority::getAuthority).toList())
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationInMs))
+                .signWith(getJwtSecret(), SignatureAlgorithm.HS512)
                 .compact();
     }
 
     public String extractUsername(String token) {
         return Jwts.parser()
-                .setSigningKey(jwtSecret).build()
+                .setSigningKey( getJwtSecret())
+                .build()
                 .parseClaimsJws(token)
                 .getBody()
                 .getSubject();
+    }
+
+    public SecretKey getJwtSecretDecoded() {
+        // If your property is base64 encoded, decode it. Otherwise, just use getBytes().
+        byte[] secretBytes = Base64.getDecoder().decode(jwtSecret.getBytes());
+        return new SecretKeySpec(secretBytes, SignatureAlgorithm.HS512.getJcaName());
     }
 
     public boolean validateToken(String token, UserDetails userDetails) {
@@ -48,22 +68,16 @@ public class JwtUtil {
 
     private boolean isTokenExpired(String token) {
         Date expiration = Jwts.parser()
-                .setSigningKey(jwtSecret).build()
+                .setSigningKey(getJwtSecret())
+                .build()
                 .parseClaimsJws(token)
                 .getBody()
                 .getExpiration();
         return expiration.before(new Date());
     }
 
-    public String generateToken(String username, Collection<? extends GrantedAuthority> authorities) {
-        byte[] secretBytes = Base64.getEncoder().encode(jwtSecret.getBytes());
-        SecretKey secretKey = new SecretKeySpec(secretBytes, SignatureAlgorithm.HS512.getJcaName());
-        return Jwts.builder()
-                .setSubject(username)
-                .claim("roles", authorities.stream().map(GrantedAuthority::getAuthority).toList())
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationInMs))
-                .signWith(SignatureAlgorithm.HS512, secretKey)
-                .compact();
+    public Key getJwtSecret() {
+        byte[] keyBytes = Decoders.BASE64.decode(jwtSecret);
+        return Keys.hmacShaKeyFor(keyBytes);
     }
 }
