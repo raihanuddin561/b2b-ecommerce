@@ -5,6 +5,8 @@ import com.dealkartbd.backend_app.dto.RegisterCompanyResponse;
 import com.dealkartbd.backend_app.entity.Company;
 import com.dealkartbd.backend_app.entity.Role;
 import com.dealkartbd.backend_app.entity.User;
+import com.dealkartbd.backend_app.entity.UserType;
+import com.dealkartbd.backend_app.exception.UserAlreadyExistsException;
 import com.dealkartbd.backend_app.repository.CompanyRepository;
 import com.dealkartbd.backend_app.repository.RoleRepository;
 import com.dealkartbd.backend_app.repository.UserRepository;
@@ -24,12 +26,9 @@ public class RegisterCompanyService {
     private final PasswordEncoder passwordEncoder;
 
     public RegisterCompanyResponse registerCompany(RegisterCompanyRequest request) {
-        // 1. Check if user already exists
         if (userRepository.existsByEmail(request.adminEmail())) {
-            throw new RuntimeException("Email already in use");
+            throw new UserAlreadyExistsException("Email already in use");
         }
-
-        // 2. Create company
         Company company = new Company();
         company.setName(request.companyName());
         company.setAddress(request.address());
@@ -48,7 +47,7 @@ public class RegisterCompanyService {
         user.setPassword(passwordEncoder.encode(request.adminPassword()));
         user.setCompany(savedCompany);
         user.setRoles(Set.of(adminRole));
-
+        user.setUserType(UserType.COMPANY_OWNER);
         userRepository.save(user);
 
         return new RegisterCompanyResponse("Company registered successfully!");
