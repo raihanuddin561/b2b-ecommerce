@@ -1,6 +1,7 @@
 package com.dealkartbd.backend_app.security;
 
 import com.dealkartbd.backend_app.service.CustomUserDetailsService;
+import com.dealkartbd.backend_app.service.UserService;
 import com.dealkartbd.backend_app.utils.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -23,6 +24,7 @@ public class SecurityConfig {
     private final CustomUserDetailsService customUserDetailsService;
     private final JwtUtil jwtUtil;
     private final Environment env;
+    private final UserService userService;
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
@@ -41,7 +43,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**", env.getProperty(LOGIN_PATH), "/home").permitAll()
                         .anyRequest().authenticated()
                 )
-                .addFilter(new CustomAuthenticationFilter(authenticationManager, jwtUtil, env))
+                .addFilter(new CustomAuthenticationFilter(authenticationManager, jwtUtil, env, userService))
                 .addFilterBefore(new CustomAuthorizationFilter(jwtUtil, customUserDetailsService, env),
                         CustomAuthenticationFilter.class);
         return http.build();
