@@ -35,11 +35,11 @@ public class GlobalExceptionHandler {
                                                                                      HttpServletRequest request) {
         return buildResponse("Invalid authorization token", HttpStatus.UNAUTHORIZED, request.getRequestURI());
     }
-   /* @ExceptionHandler(UserAlreadyExistsException.class)
+    @ExceptionHandler(UserAlreadyExistsException.class)
     public ResponseEntity<Map<String, ApiErrorResponse>> handleUserExists(
             UserAlreadyExistsException ex, HttpServletRequest request) {
         return buildResponse(ex.getMessage(), HttpStatus.CONFLICT, request.getRequestURI());
-    }*/
+    }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, ApiErrorResponse>> handleValidation(
