@@ -102,9 +102,9 @@ public class GlobalExceptionHandler {
         ApiErrorResponse response = new ApiErrorResponse(
                 message,
                 status.value(),
-                LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
-                path
+                LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
         );
+
         return new ResponseEntity<>(Map.of(ERROR_KEY, response), status);
     }
 }
