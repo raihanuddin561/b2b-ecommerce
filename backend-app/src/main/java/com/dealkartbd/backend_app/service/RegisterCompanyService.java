@@ -21,6 +21,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Set;
 
 import static com.dealkartbd.backend_app.constans.AppConstants.REGISTRATION_SUCCESS_MSG;
+import static com.dealkartbd.backend_app.exception.ErrorMessages.ROLE_IS_NOT_FOUND;
+import static com.dealkartbd.backend_app.exception.ErrorMessages.USER_ALREADY_EXISTS;
 
 @Service
 @RequiredArgsConstructor
@@ -38,7 +40,7 @@ public class RegisterCompanyService {
     public RegisterCompanyResponse registerCompany(RegisterCompanyRequest request) {
         // Check if email already exists first
         if (userRepository.existsByEmail(request.adminEmail())) {
-            throw new UserAlreadyExistsException("Email already in use");
+            throw new UserAlreadyExistsException(USER_ALREADY_EXISTS.getMessage());
         }
 
         // Validate email format and check if it's active (strict validation)
@@ -57,7 +59,7 @@ public class RegisterCompanyService {
 
             // Get VENDOR role
             Role adminRole = roleRepository.findByName(Role.RoleName.VENDOR)
-                    .orElseThrow(() -> new RoleIsNotFoundException("VENDOR role not found"));
+                    .orElseThrow(() -> new RoleIsNotFoundException(ROLE_IS_NOT_FOUND.getMessage()));
 
             // Create admin user
             User user = new User();
@@ -77,8 +79,8 @@ public class RegisterCompanyService {
                     request.companyName(), request.adminEmail());
 
             return new RegisterCompanyResponse(
-                    REGISTRATION_SUCCESS_MSG + " Please check your email to confirm your account. " +
-                            "If you don't receive the email, you can request a new confirmation email."
+                    REGISTRATION_SUCCESS_MSG +
+                            " If you don't receive the email, you can request a new confirmation email."
             );
 
         } catch (Exception e) {

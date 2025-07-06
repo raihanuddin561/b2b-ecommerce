@@ -19,6 +19,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import static com.dealkartbd.backend_app.exception.ErrorMessages.*;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -56,14 +58,14 @@ public class EmailConfirmationService {
     @Transactional
     public void confirmEmail(String token) {
         EmailConfirmationToken confirmationToken = tokenRepository.findByToken(token)
-            .orElseThrow(() -> new InvalidTokenException("Invalid confirmation token"));
+            .orElseThrow(() -> new InvalidTokenException(TOKEN_IS_NOT_VALID.getMessage()));
 
         if (confirmationToken.isUsed()) {
-            throw new InvalidTokenException("Confirmation token has already been used");
+            throw new InvalidTokenException(CONFIRMATION_TOKEN_HAS_ALREADY_USED.getMessage());
         }
 
         if (confirmationToken.getExpiryDate().isBefore(LocalDateTime.now())) {
-            throw new InvalidTokenException("Confirmation token has expired");
+            throw new InvalidTokenException(CONFIRMATION_TOKEN_EXPIRED.getMessage());
         }
 
         User user = confirmationToken.getUser();
