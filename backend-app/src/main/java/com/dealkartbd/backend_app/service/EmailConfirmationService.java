@@ -5,10 +5,12 @@ import com.dealkartbd.backend_app.entity.EmailConfirmationToken;
 import com.dealkartbd.backend_app.entity.User;
 import com.dealkartbd.backend_app.exception.EmailAlreadyConfirmedException;
 import com.dealkartbd.backend_app.exception.EmailConfirmationException;
+import com.dealkartbd.backend_app.exception.EmailSendingException;
 import com.dealkartbd.backend_app.exception.InvalidTokenException;
 import com.dealkartbd.backend_app.repository.EmailConfirmationTokenRepository;
 import com.dealkartbd.backend_app.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -19,6 +21,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class EmailConfirmationService {
 
     private final EmailConfirmationTokenRepository tokenRepository;
@@ -27,16 +30,27 @@ public class EmailConfirmationService {
 
     @Transactional
     public void createAndSendConfirmationToken(User user) {
-        // Delete existing token if any
-        tokenRepository.findByUser(user).ifPresent(tokenRepository::delete);
+        try {
+            // Delete existing token if any
+            tokenRepository.findByUser(user).ifPresent(tokenRepository::delete);
 
-        // Create new token
-        String token = UUID.randomUUID().toString();
-        EmailConfirmationToken confirmationToken = new EmailConfirmationToken(token, user);
-        tokenRepository.save(confirmationToken);
+            // Create new token
+            String token = UUID.randomUUID().toString();
+            EmailConfirmationToken confirmationToken = new EmailConfirmationToken(token, user);
+            tokenRepository.save(confirmationToken);
 
-        // Send email
-        emailService.sendEmailConfirmation(user.getEmail(), token, user.getFullName());
+            // Send email - if this fails, we still keep the user but mark email as failed
+            emailService.sendEmailConfirmation(user.getEmail(), token, user.getFullName());
+
+        } catch (EmailSendingException e) {
+            log.error("Failed to send confirmation email for user: {} - {}", user.getEmail(), e.getMessage());
+            // Don't throw exception here - allow user registration to complete
+            // User can request resend later
+        } catch (Exception e) {
+            log.error("Unexpected error during email confirmation setup for user: {} - {}",
+                user.getEmail(), e.getMessage());
+            // Log but don't fail the registration process
+        }
     }
 
     @Transactional
@@ -59,12 +73,8 @@ public class EmailConfirmationService {
 
         confirmationToken.setUsed(true);
         tokenRepository.save(confirmationToken);
-    }
 
-    @Scheduled(fixedRate = 3600000) // Run every hour
-    @Transactional
-    public void cleanupExpiredTokens() {
-        tokenRepository.deleteByExpiryDateBefore(LocalDateTime.now());
+        log.info("Email successfully confirmed for user: {}", user.getEmail());
     }
 
     @Transactional
@@ -82,7 +92,32 @@ public class EmailConfirmationService {
             throw new EmailConfirmationException("Account is not in pending activation status");
         }
 
-        // Delete existing token and create new one
-        createAndSendConfirmationToken(user);
+        // Create and send new confirmation token
+        // This time we do want to throw exception if email fails since user explicitly requested it
+        try {
+            tokenRepository.findByUser(user).ifPresent(tokenRepository::delete);
+
+            String token = UUID.randomUUID().toString();
+            EmailConfirmationToken confirmationToken = new EmailConfirmationToken(token, user);
+            tokenRepository.save(confirmationToken);
+
+            emailService.sendEmailConfirmation(user.getEmail(), token, user.getFullName());
+            log.info("Confirmation email resent successfully to: {}", email);
+
+        } catch (EmailSendingException e) {
+            log.error("Failed to resend confirmation email to: {} - {}", email, e.getMessage());
+            throw new EmailSendingException("Failed to resend confirmation email. Please try again later.", e);
+        }
+    }
+
+    @Scheduled(fixedRate = 3600000) // Run every hour
+    @Transactional
+    public void cleanupExpiredTokens() {
+        try {
+            tokenRepository.deleteByExpiryDateBefore(LocalDateTime.now());
+            log.debug("Cleaned up expired email confirmation tokens");
+        } catch (Exception e) {
+            log.error("Error during cleanup of expired tokens: {}", e.getMessage());
+        }
     }
 }

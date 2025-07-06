@@ -48,6 +48,24 @@ public class GlobalExceptionHandler {
         return buildResponse(errorMessage, HttpStatus.BAD_REQUEST, request.getRequestURI());
     }
 
+    @ExceptionHandler(InvalidEmailException.class)
+    public ResponseEntity<Map<String, ApiErrorResponse>> handleInvalidEmail(
+            InvalidEmailException ex, HttpServletRequest request) {
+        return buildResponse(ex.getMessage(), HttpStatus.BAD_REQUEST, request.getRequestURI());
+    }
+
+    @ExceptionHandler(EmailSendingException.class)
+    public ResponseEntity<Map<String, ApiErrorResponse>> handleEmailSending(
+            EmailSendingException ex, HttpServletRequest request) {
+        return buildResponse(ex.getMessage(), HttpStatus.SERVICE_UNAVAILABLE, request.getRequestURI());
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Map<String, ApiErrorResponse>> handleIllegalArgument(
+            IllegalArgumentException ex, HttpServletRequest request) {
+        return buildResponse(ex.getMessage(), HttpStatus.BAD_REQUEST, request.getRequestURI());
+    }
+
     @ExceptionHandler(InvalidTokenException.class)
     public ResponseEntity<Map<String, ApiErrorResponse>> handleInvalidToken(
             InvalidTokenException ex, HttpServletRequest request) {
