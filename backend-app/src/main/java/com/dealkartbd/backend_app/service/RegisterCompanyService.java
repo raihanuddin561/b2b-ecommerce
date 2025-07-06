@@ -6,6 +6,7 @@ import com.dealkartbd.backend_app.entity.Company;
 import com.dealkartbd.backend_app.entity.Role;
 import com.dealkartbd.backend_app.entity.User;
 import com.dealkartbd.backend_app.entity.UserType;
+import com.dealkartbd.backend_app.exception.RoleIsNotFoundException;
 import com.dealkartbd.backend_app.exception.UserAlreadyExistsException;
 import com.dealkartbd.backend_app.repository.CompanyRepository;
 import com.dealkartbd.backend_app.repository.RoleRepository;
@@ -16,6 +17,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.Set;
 
+import static com.dealkartbd.backend_app.constans.AppConstants.REGISTRATION_SUCCESS_MSG;
+
 @Service
 @RequiredArgsConstructor
 public class RegisterCompanyService {
@@ -24,6 +27,7 @@ public class RegisterCompanyService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UserService userService;
 
     public RegisterCompanyResponse registerCompany(RegisterCompanyRequest request) {
         if (userRepository.existsByEmail(request.adminEmail())) {
@@ -38,7 +42,7 @@ public class RegisterCompanyService {
 
         // 3. Get ADMIN role
         Role adminRole = roleRepository.findByName(Role.RoleName.VENDOR)
-                .orElseThrow(() -> new RuntimeException("VENDOR role not found"));
+                .orElseThrow(() -> new RoleIsNotFoundException("VENDOR role not found"));
 
         // 4. Create admin user
         User user = new User();
@@ -48,8 +52,10 @@ public class RegisterCompanyService {
         user.setCompany(savedCompany);
         user.setRoles(Set.of(adminRole));
         user.setUserType(UserType.COMPANY_OWNER);
-        userRepository.save(user);
 
-        return new RegisterCompanyResponse("Company registered successfully!");
+        // Use new method that sends email confirmation
+        userService.createUserWithEmailConfirmation(user);
+
+        return new RegisterCompanyResponse(REGISTRATION_SUCCESS_MSG);
     }
 }

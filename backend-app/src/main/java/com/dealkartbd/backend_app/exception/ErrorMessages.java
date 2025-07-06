@@ -13,7 +13,16 @@ public enum ErrorMessages {
     RESOURCE_ALREADY_EXISTS("Resource already exists"),
     BAD_REQUEST("Bad request"),
     TOKEN_IS_NOT_VALID("Token is not valid"),
-    TOKEN_IS_EXPIRED("Token is expired");
+    TOKEN_IS_EXPIRED("Token is expired"),
+    INVALID_OR_EXPIRATION_TOKEN("Invalid or expired confirmation token."),
+    TOKEN_VALIDATION_FAILED("Token validation failed"),
+    ACCOUNT_IS_DISABLED("Account is disabled"),
+    ACCOUNT_IS_LOCKED("Account is locked"),
+    ACCOUNT_IS_NOT_ACTIVE("Account is not active"),
+    ACCOUNT_IS_DEACTIVATED("Account is deactivated"),
+    ACCOUNT_IS_SUSPENDED("Account is suspended"),
+
+    ACCOUNT_IS_BANNED("Account is banned");
 
     private final String message;
 

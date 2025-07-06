@@ -48,6 +48,29 @@ public class GlobalExceptionHandler {
         return buildResponse(errorMessage, HttpStatus.BAD_REQUEST, request.getRequestURI());
     }
 
+    @ExceptionHandler(InvalidTokenException.class)
+    public ResponseEntity<Map<String, ApiErrorResponse>> handleInvalidToken(
+            InvalidTokenException ex, HttpServletRequest request) {
+        return buildResponse(ex.getMessage(), HttpStatus.BAD_REQUEST, request.getRequestURI());
+    }
+
+    @ExceptionHandler(EmailConfirmationException.class)
+    public ResponseEntity<Map<String, ApiErrorResponse>> handleEmailConfirmation(
+            EmailConfirmationException ex, HttpServletRequest request) {
+        return buildResponse(ex.getMessage(), HttpStatus.BAD_REQUEST, request.getRequestURI());
+    }
+
+    @ExceptionHandler(EmailAlreadyConfirmedException.class)
+    public ResponseEntity<Map<String, ApiErrorResponse>> handleEmailAlreadyConfirmed(
+            EmailAlreadyConfirmedException ex, HttpServletRequest request) {
+        return buildResponse(ex.getMessage(), HttpStatus.CONFLICT, request.getRequestURI());
+    }
+
+    @ExceptionHandler(RoleIsNotFoundException.class)
+    public ResponseEntity<Map<String, ApiErrorResponse>> handleRoleIsNotFound(
+            EmailAlreadyConfirmedException ex, HttpServletRequest request) {
+        return buildResponse(ex.getMessage(), HttpStatus.CONFLICT, request.getRequestURI());
+    }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, ApiErrorResponse>> handleGeneric(

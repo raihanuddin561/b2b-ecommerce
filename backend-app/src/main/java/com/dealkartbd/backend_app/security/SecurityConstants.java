@@ -6,4 +6,5 @@ public class SecurityConstants {
     public static final String CHAR_SET_UTF_8 = "UTF-8";
     public static final String AUTHORIZATION_HEADER = "Authorization";
     public static final String BEARER_PREFIX = "Bearer ";
+    public static final String CONFIRM_YOUR_EMAIL_ADDRESS_MSG = "Please confirm your email address to activate your account";
 }

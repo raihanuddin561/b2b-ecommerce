@@ -15,6 +15,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 
+import static com.dealkartbd.backend_app.constans.ApiPaths.HOME_PATH;
 import static com.dealkartbd.backend_app.security.SecurityConstants.LOGIN_PATH;
 
 @RequiredArgsConstructor
@@ -40,11 +41,11 @@ public class SecurityConfig {
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**", env.getProperty(LOGIN_PATH), "/home").permitAll()
+                        .requestMatchers("/api/auth/**", env.getProperty(LOGIN_PATH), HOME_PATH).permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilter(new CustomAuthenticationFilter(authenticationManager, jwtUtil, env, userService))
-                .addFilterBefore(new CustomAuthorizationFilter(jwtUtil, customUserDetailsService, env),
+                .addFilterBefore(new CustomAuthorizationFilter(jwtUtil, customUserDetailsService, userService, env),
                         CustomAuthenticationFilter.class);
         return http.build();
     }

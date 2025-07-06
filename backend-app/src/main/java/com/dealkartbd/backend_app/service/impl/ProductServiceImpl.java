@@ -23,7 +23,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public void addProduct(ProductRequest request, Principal principal) {
         Company company = companyRepository.findByEmail(principal.getName())
-                .orElseThrow(() -> new UsernameNotFoundException("Company not found"));
+                .orElseThrow(() -> new UsernameNotFoundException("Company not found for user email: " + principal.getName()));
 
         Product product = Product.builder()
                 .name(request.getName())
