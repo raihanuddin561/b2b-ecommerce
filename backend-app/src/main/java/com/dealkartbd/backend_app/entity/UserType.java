@@ -1,8 +1,11 @@
 package com.dealkartbd.backend_app.entity;
 
 public enum UserType {
-    CUSTOMER,
+    ADMIN,
+    EMPLOYEE,
     COMPANY_OWNER,
-    PLATFORM_ADMIN
+    COMPANY_EMPLOYEE,
+    SUPER_ADMIN,
+    CUSTOMER,
+    BUYER
 }
-

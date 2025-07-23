@@ -86,8 +86,14 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(RoleIsNotFoundException.class)
     public ResponseEntity<Map<String, ApiErrorResponse>> handleRoleIsNotFound(
-            EmailAlreadyConfirmedException ex, HttpServletRequest request) {
+            RoleIsNotFoundException ex, HttpServletRequest request) {
         return buildResponse(ex.getMessage(), HttpStatus.CONFLICT, request.getRequestURI());
+    }
+
+    @ExceptionHandler(InvalidFieldException.class)
+    public ResponseEntity<Map<String, ApiErrorResponse>> handleInvalidField(
+            InvalidFieldException ex, HttpServletRequest request) {
+        return buildResponse(ex.getMessage(), HttpStatus.BAD_REQUEST, request.getRequestURI());
     }
 
     @ExceptionHandler(Exception.class)

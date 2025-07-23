@@ -2,6 +2,7 @@ package com.dealkartbd.backend_app.service.impl;
 
 import com.dealkartbd.backend_app.dto.UserDto;
 import com.dealkartbd.backend_app.entity.AccountStatus;
+import com.dealkartbd.backend_app.entity.Company;
 import com.dealkartbd.backend_app.entity.User;
 import com.dealkartbd.backend_app.repository.UserRepository;
 import com.dealkartbd.backend_app.service.EmailConfirmationService;
@@ -105,7 +106,20 @@ public class UserServiceImpl implements UserService {
             .map(role -> role.getName().name())
             .collect(Collectors.toSet()));
         dto.setCompanyName(user.getCompany() != null ? user.getCompany().getName() : null);
-        dto.setCompanyAddress(user.getCompany() != null ? user.getCompany().getAddress() : null);
+        // Build company address from individual fields
+        if (user.getCompany() != null) {
+            Company company = user.getCompany();
+            StringBuilder address = new StringBuilder();
+            if (company.getAddressStreet() != null && !company.getAddressStreet().isEmpty()) address.append(company.getAddressStreet()).append(", ");
+            if (company.getAddressCity() != null && !company.getAddressCity().isEmpty()) address.append(company.getAddressCity()).append(", ");
+            if (company.getAddressState() != null && !company.getAddressState().isEmpty()) address.append(company.getAddressState()).append(", ");
+            if (company.getAddressPostalCode() != null && !company.getAddressPostalCode().isEmpty()) address.append(company.getAddressPostalCode()).append(", ");
+            if (company.getAddressCountry() != null && !company.getAddressCountry().isEmpty()) address.append(company.getAddressCountry());
+            String fullAddress = address.toString().replaceAll(", $", ""); // Remove trailing comma
+            dto.setCompanyAddress(fullAddress.isEmpty() ? null : fullAddress);
+        } else {
+            dto.setCompanyAddress(null);
+        }
         return dto;
     }
 }

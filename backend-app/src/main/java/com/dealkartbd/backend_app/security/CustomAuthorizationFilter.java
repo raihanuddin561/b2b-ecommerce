@@ -128,8 +128,7 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
         ApiErrorResponse errorResponse = new ApiErrorResponse(
                 message,
                 code,
-                LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
-                path
+                LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
         );
         objectMapper.writeValue(response.getOutputStream(), Map.of(ERROR, errorResponse));
     }

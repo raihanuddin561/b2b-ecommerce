@@ -14,4 +14,18 @@ public interface CompanyRepository extends JpaRepository<Company, Long> {
 
     @Query("SELECT c FROM Company c JOIN c.users u WHERE u.email = :email")
     Optional<Company> findByEmail(@Param("email") String email);
+
+    /**
+     * Checks if a company exists by its name.
+     * @param name the company name
+     * @return true if a company with the given name exists
+     */
+    boolean existsByName(String name);
+
+    /**
+     * Checks if a company exists by its registration number.
+     * @param registrationNumber the registration number
+     * @return true if a company with the given registration number exists
+     */
+    boolean existsByRegistrationNumber(String registrationNumber);
 }

@@ -16,7 +16,16 @@ public class Company {
 
     private String name;
     private String registrationNumber;
-    private String address;
+    private String companyType;
+    private String industry;
+    private String website;
+    private String companyPhone;
+    private String taxId;
+    private String addressStreet;
+    private String addressCity;
+    private String addressState;
+    private String addressPostalCode;
+    private String addressCountry;
 
     @OneToMany(mappedBy = "company", cascade = CascadeType.ALL)
     private List<User> users = new ArrayList<>();

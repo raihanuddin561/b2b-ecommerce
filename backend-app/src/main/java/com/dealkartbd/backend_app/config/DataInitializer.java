@@ -19,22 +19,13 @@ public class DataInitializer implements ApplicationListener<ContextRefreshedEven
     }
 
     private void initRoles() {
-        if (roleRepository.findByName(Role.RoleName.ADMIN).isEmpty()) {
-            Role adminRole = new Role();
-            adminRole.setName(Role.RoleName.ADMIN);
-            roleRepository.save(adminRole);
-        }
-
-        if (roleRepository.findByName(Role.RoleName.EMPLOYEE).isEmpty()) {
-            Role employee = new Role();
-            employee.setName(Role.RoleName.EMPLOYEE);
-            roleRepository.save(employee);
-        }
-
-        if (roleRepository.findByName(Role.RoleName.VENDOR).isEmpty()) {
-            Role employee = new Role();
-            employee.setName(Role.RoleName.VENDOR);
-            roleRepository.save(employee);
+        // Ensure all roles in the enum are present in the database
+        for (Role.RoleName roleName : Role.RoleName.values()) {
+            if (roleRepository.findByName(roleName).isEmpty()) {
+                Role role = new Role();
+                role.setName(roleName);
+                roleRepository.save(role);
+            }
         }
     }
 }

@@ -18,6 +18,8 @@ public class User {
     private String fullName;
     private String email;
     private String password;
+    private String phone;
+    private String position;
 
     @ManyToOne
     @JoinColumn(name = "company_id")
@@ -58,4 +60,11 @@ public class User {
 
     @Column(name = "locked_until")
     private LocalDateTime lockedUntil;
+
+    // --- Buyer address fields ---
+    private String addressStreet;
+    private String addressCity;
+    private String addressState;
+    private String addressPostalCode;
+    private String addressCountry;
 }

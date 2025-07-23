@@ -21,6 +21,6 @@ public class Role {
         COMPANY_EMPLOYEE,
         SUPER_ADMIN,
         CUSTOMER,
-        VENDOR
+        BUYER
     }
 }
