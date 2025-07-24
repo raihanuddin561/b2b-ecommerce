@@ -2,40 +2,62 @@ package com.dealkartbd.backend_app.controller;
 
 import com.dealkartbd.backend_app.dto.RegisterBuyerRequest;
 import com.dealkartbd.backend_app.service.RegisterBuyerService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(RegisterBuyerController.class)
+@ExtendWith(MockitoExtension.class)
 class RegisterBuyerControllerTest {
-    @Autowired
+
     private MockMvc mockMvc;
 
-    @MockBean
+    @Mock
     private RegisterBuyerService registerBuyerService;
+
+    @InjectMocks
+    private RegisterBuyerController registerBuyerController;
+
+    @BeforeEach
+    void setUp() {
+        mockMvc = MockMvcBuilders.standaloneSetup(registerBuyerController).build();
+    }
 
     @Test
     void registerBuyer_success() throws Exception {
+        // Given
+        doNothing().when(registerBuyerService).registerBuyer(any(RegisterBuyerRequest.class));
+
         String requestJson = "{" +
                 "\"fullName\":\"Test Buyer\"," +
                 "\"email\":\"buyer@example.com\"," +
-                "\"password\":\"password123\"}";
+                "\"password\":\"password123\"," +
+                "\"phone\":\"+1234567890\"," +
+                "\"addressStreet\":\"123 Test St\"," +
+                "\"addressCity\":\"Test City\"," +
+                "\"addressState\":\"Test State\"," +
+                "\"addressPostalCode\":\"12345\"," +
+                "\"addressCountry\":\"Test Country\"}";
 
+        // When & Then
         mockMvc.perform(post("/api/buyers/register")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson))
                 .andExpect(status().isCreated())
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("Registration successful")));
+                .andExpect(content().string("Registration successful! Please check your email to verify your account."));
 
-        Mockito.verify(registerBuyerService).registerBuyer(Mockito.any(RegisterBuyerRequest.class));
+        verify(registerBuyerService).registerBuyer(any(RegisterBuyerRequest.class));
     }
 }
-

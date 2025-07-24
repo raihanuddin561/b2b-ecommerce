@@ -96,6 +96,71 @@ public class GlobalExceptionHandler {
         return buildResponse(ex.getMessage(), HttpStatus.BAD_REQUEST, request.getRequestURI());
     }
 
+    // ===== PATH AND RESOURCE RELATED EXCEPTIONS =====
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<Map<String, ApiErrorResponse>> handleResourceNotFound(
+            ResourceNotFoundException ex, HttpServletRequest request) {
+        return buildResponse(ex.getMessage(), HttpStatus.NOT_FOUND, request.getRequestURI());
+    }
+
+    @ExceptionHandler(InvalidPathException.class)
+    public ResponseEntity<Map<String, ApiErrorResponse>> handleInvalidPath(
+            InvalidPathException ex, HttpServletRequest request) {
+        return buildResponse(ex.getMessage(), HttpStatus.BAD_REQUEST, request.getRequestURI());
+    }
+
+    // Handle Spring's NoHandlerFoundException (when endpoint doesn't exist)
+    @ExceptionHandler(org.springframework.web.servlet.NoHandlerFoundException.class)
+    public ResponseEntity<Map<String, ApiErrorResponse>> handleNoHandlerFound(
+            org.springframework.web.servlet.NoHandlerFoundException ex, HttpServletRequest request) {
+        String message = String.format("Endpoint not found: %s %s", ex.getHttpMethod(), ex.getRequestURL());
+        return buildResponse(message, HttpStatus.NOT_FOUND, request.getRequestURI());
+    }
+
+    // Handle HTTP method not allowed (wrong HTTP method for existing endpoint)
+    @ExceptionHandler(org.springframework.web.HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<Map<String, ApiErrorResponse>> handleMethodNotAllowed(
+            org.springframework.web.HttpRequestMethodNotSupportedException ex, HttpServletRequest request) {
+        String message = String.format("Method %s not allowed for this endpoint. Supported methods: %s",
+                ex.getMethod(), String.join(", ", ex.getSupportedMethods()));
+        return buildResponse(message, HttpStatus.METHOD_NOT_ALLOWED, request.getRequestURI());
+    }
+
+    // Handle missing path variables
+    @ExceptionHandler(org.springframework.web.bind.MissingPathVariableException.class)
+    public ResponseEntity<Map<String, ApiErrorResponse>> handleMissingPathVariable(
+            org.springframework.web.bind.MissingPathVariableException ex, HttpServletRequest request) {
+        String message = String.format("Required path variable '%s' is missing", ex.getVariableName());
+        return buildResponse(message, HttpStatus.BAD_REQUEST, request.getRequestURI());
+    }
+
+    // Handle type mismatch in path variables (e.g., string where number expected)
+    @ExceptionHandler(org.springframework.web.method.annotation.MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<Map<String, ApiErrorResponse>> handleTypeMismatch(
+            org.springframework.web.method.annotation.MethodArgumentTypeMismatchException ex, HttpServletRequest request) {
+        String message = String.format("Invalid value '%s' for parameter '%s'. Expected type: %s",
+                ex.getValue(), ex.getName(), ex.getRequiredType().getSimpleName());
+        return buildResponse(message, HttpStatus.BAD_REQUEST, request.getRequestURI());
+    }
+
+    // Handle unsupported media type
+    @ExceptionHandler(org.springframework.web.HttpMediaTypeNotSupportedException.class)
+    public ResponseEntity<Map<String, ApiErrorResponse>> handleUnsupportedMediaType(
+            org.springframework.web.HttpMediaTypeNotSupportedException ex, HttpServletRequest request) {
+        String message = String.format("Media type '%s' not supported. Supported types: %s",
+                ex.getContentType(), ex.getSupportedMediaTypes());
+        return buildResponse(message, HttpStatus.UNSUPPORTED_MEDIA_TYPE, request.getRequestURI());
+    }
+
+    // Handle missing request body
+    @ExceptionHandler(org.springframework.http.converter.HttpMessageNotReadableException.class)
+    public ResponseEntity<Map<String, ApiErrorResponse>> handleMessageNotReadable(
+            org.springframework.http.converter.HttpMessageNotReadableException ex, HttpServletRequest request) {
+        String message = "Required request body is missing or malformed";
+        return buildResponse(message, HttpStatus.BAD_REQUEST, request.getRequestURI());
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, ApiErrorResponse>> handleGeneric(
             Exception ex, HttpServletRequest request) {

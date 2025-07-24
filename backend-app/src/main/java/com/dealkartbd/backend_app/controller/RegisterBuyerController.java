@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/api/buyers")
+@RequestMapping("/api/auth/buyers")
 @RequiredArgsConstructor
 public class RegisterBuyerController {
     private final RegisterBuyerService registerBuyerService;
@@ -24,7 +24,8 @@ public class RegisterBuyerController {
     @PostMapping("/register")
     public ResponseEntity<String> registerBuyer(@Valid @RequestBody RegisterBuyerRequest request) {
         registerBuyerService.registerBuyer(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body("Registration successful. Please check your email to confirm your account.");
+        return ResponseEntity.status(HttpStatus.CREATED).body("Registration successful. Please check your email to " +
+                "confirm your account.");
     }
 }
 

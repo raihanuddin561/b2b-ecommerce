@@ -105,7 +105,23 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
 
         List<String> roles = userDto.getRoles().stream().toList();
         String token = jwtUtil.generateToken(username, authResult.getAuthorities());
-        LoginResponse loginResponse = new LoginResponse(token, roles, userDto.getUserType().name());
+
+        // Calculate token expiration time
+        LocalDateTime expiresAt = LocalDateTime.now().plusHours(24); // Assuming 24h token expiration
+
+        // Create enhanced login response with secure user info (NO EMAIL EXPOSURE)
+        LoginResponse loginResponse = new LoginResponse(
+            token,
+            userDto.getId(),                    // userId - for API calls
+            userDto.getName(),                  // display name - safe to show
+            extractUsername(userDto.getEmail()), // username without domain
+            roles,                              // user roles
+            userDto.getUserType().name(),       // user type
+            expiresAt,                          // token expiration
+            userDto.isEmailVerified(),          // email verification status
+            generateProfileInitials(userDto.getName()) // initials for avatar
+        );
+
         response.setContentType(CONTENT_TYPE_APPLICATION_JSON);
         response.setCharacterEncoding(CHAR_SET_UTF_8);
         new ObjectMapper().writeValue(response.getOutputStream(), loginResponse);
@@ -132,5 +148,39 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
+    }
+
+    /**
+     * Extract username from email (part before @) for display purposes
+     * Example: john.doe@company.com -> john.doe
+     */
+    private String extractUsername(String email) {
+        if (email == null || !email.contains("@")) {
+            return "user";
+        }
+        return email.substring(0, email.indexOf("@"));
+    }
+
+    /**
+     * Generate profile initials from full name for avatar display
+     * Example: "John Doe" -> "JD", "Alice Smith Johnson" -> "AS"
+     */
+    private String generateProfileInitials(String fullName) {
+        if (fullName == null || fullName.trim().isEmpty()) {
+            return "U";
+        }
+
+        String[] nameParts = fullName.trim().split("\\s+");
+        StringBuilder initials = new StringBuilder();
+
+        // Take first letter of first name and last name (max 2 letters)
+        if (nameParts.length >= 1) {
+            initials.append(nameParts[0].charAt(0));
+        }
+        if (nameParts.length >= 2) {
+            initials.append(nameParts[nameParts.length - 1].charAt(0));
+        }
+
+        return initials.toString().toUpperCase();
     }
 }
