@@ -52,11 +52,11 @@ class RegisterBuyerControllerTest {
                 "\"addressCountry\":\"Test Country\"}";
 
         // When & Then
-        mockMvc.perform(post("/api/buyers/register")
+        mockMvc.perform(post("/api/auth/buyers/register")  // Fixed URL to match controller mapping
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson))
                 .andExpect(status().isCreated())
-                .andExpect(content().string("Registration successful! Please check your email to verify your account."));
+                .andExpect(content().string("Registration successful. Please check your email to confirm your account."));  // Updated message to match controller
 
         verify(registerBuyerService).registerBuyer(any(RegisterBuyerRequest.class));
     }

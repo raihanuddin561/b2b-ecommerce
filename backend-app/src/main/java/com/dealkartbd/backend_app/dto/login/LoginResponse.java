@@ -7,7 +7,6 @@ public record LoginResponse(
     String token,
     Long userId,
     String name,                    // Display name only - safe to expose
-    String username,               // Username/handle (if different from email)
     List<String> roles,
     String userType,
     LocalDateTime expiresAt,

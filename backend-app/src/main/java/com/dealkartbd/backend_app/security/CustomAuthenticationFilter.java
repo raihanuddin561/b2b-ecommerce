@@ -114,7 +114,6 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
             token,
             userDto.getId(),                    // userId - for API calls
             userDto.getName(),                  // display name - safe to show
-            extractUsername(userDto.getEmail()), // username without domain
             roles,                              // user roles
             userDto.getUserType().name(),       // user type
             expiresAt,                          // token expiration

@@ -5,11 +5,12 @@ A scalable, modular B2B e-commerce backend built with Java, Spring Boot, and bes
 ## 🚀 Features
 - **Multi-User Registration System**: Company (Vendor) & Buyer registration with role-based access
 - **Secure Authentication**: JWT-based authentication with enhanced login responses
-- **Professional Exception Handling**: Comprehensive error handling for all API endpoints
+- **Comprehensive Error Handling**: Professional exception handling for ALL types of wrong request paths
 - **Email Verification**: Automated email confirmation for account activation
 - **Address Management**: Complete address handling for both personal and company addresses
 - **Role-Based Authorization**: RBAC with UserType (BUYER/SELLER/ADMIN) support
 - **Professional API Design**: RESTful endpoints with proper HTTP status codes
+- **Robust Path Validation**: Handles all kinds of invalid requests professionally
 
 ## 🏗️ Architecture Overview
 
@@ -17,6 +18,8 @@ A scalable, modular B2B e-commerce backend built with Java, Spring Boot, and bes
 ```
 ┌─────────────────────────────────────────┐
 │           Controller Layer              │  ← REST API Endpoints
+├─────────────────────────────────────────┤
+│       Exception Handling Layer          │  ← Global Error Management
 ├─────────────────────────────────────────┤
 │            Service Layer                │  ← Business Logic
 ├─────────────────────────────────────────┤
@@ -37,6 +40,18 @@ A scalable, modular B2B e-commerce backend built with Java, Spring Boot, and bes
     JWT Validation          Role Checking          Business Logic
 ```
 
+### 🛡️ Error Handling Architecture
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│  HTTP Request   │───▶│ Spring Security │───▶│   Controllers   │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+         │                       │                       │
+         ▼                       ▼                       ▼
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│ FallbackCtrlr   │───▶│GlobalExceptionHr│───▶│ ApiErrorResponse│
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+```
+
 ## 📁 Project Structure
 
 ### Controllers
@@ -44,271 +59,176 @@ A scalable, modular B2B e-commerce backend built with Java, Spring Boot, and bes
 - **`RegisterBuyerController`**: Buyer registration endpoints  
 - **`AuthController`**: Email confirmation and authentication
 - **`UserController`**: User profile and settings management
+- **`FallbackController`**: Handles ALL unmatched API paths professionally
+
+### Exception Handling System
+- **`GlobalExceptionHandler`**: Centralized exception handling for all error types
+- **`EndpointNotFoundException`**: Custom exception for non-existent endpoints
+- **`ServiceUnavailableException`**: Professional service unavailable responses
+- **`InvalidFieldException`**: Field validation error handling
+- **`ApiErrorResponse`**: Standardized error response format
 
 ### Services & Implementation
 - **`RegisterCompanyService`**: Business logic for company registration
 - **`RegisterBuyerService`**: Business logic for buyer registration
 - **`UserServiceImpl`**: User management with ModelMapper integration
-- **`EmailConfirmationService`**: Email verification workflows
 
-### Security Components
-- **`CustomAuthenticationFilter`**: JWT-based login with enhanced responses
-- **`CustomAuthorizationFilter`**: Token validation and user context
-- **`JwtUtil`**: JWT token generation and validation utilities
+## 🛡️ Comprehensive Error Handling
 
-### Exception Handling
-- **`GlobalExceptionHandler`**: Centralized exception handling
-- **Custom Exceptions**: Professional error responses for different scenarios
-  - `ResourceNotFoundException`: For missing resources (404)
-  - `InvalidPathException`: For invalid API paths (400)
-  - `UserAlreadyExistsException`: For duplicate registrations (409)
-  - `InvalidFieldException`: For validation errors (400)
+### Error Types Handled Professionally
 
-## 🔑 Authentication & Authorization
+#### 1. **Path-Related Errors**
+- ✅ Non-existent API endpoints (`/api/nonexistent`)
+- ✅ Wrong HTTP methods (`DELETE` on `POST` endpoints)
+- ✅ Invalid path parameters (`/api/users/invalid-id`)
+- ✅ Missing path variables
+- ✅ Type mismatches in URLs (`string` where `number` expected)
+- ✅ Paths outside API structure (`/wrong-path`)
 
-### Enhanced Login Response
-```json
-{
-  "token": "eyJhbGciOiJIUzI1NiJ9...",
-  "userId": 123,
-  "name": "John Doe",
-  "username": "john.doe",
-  "roles": ["BUYER"],
-  "userType": "BUYER", 
-  "expiresAt": "2025-07-25T21:30:00",
-  "emailVerified": true,
-  "profileInitials": "JD"
-}
-```
+#### 2. **Request Format Errors**
+- ✅ Unsupported media types (`application/xml` on JSON endpoints)
+- ✅ Malformed JSON in request body
+- ✅ Missing required request body
+- ✅ Missing request parameters
+- ✅ Invalid parameter formats
 
-### Security Features
-- **JWT Token Security**: No email exposure in login responses
-- **Profile Initials**: Auto-generated for avatar display
-- **Token Expiration**: Clear expiry time for frontend handling
-- **Role-Based Access**: Comprehensive RBAC implementation
+#### 3. **Authentication & Authorization Errors**
+- ✅ Invalid credentials
+- ✅ Expired JWT tokens
+- ✅ Access denied (insufficient permissions)
+- ✅ Missing authentication
 
-## 🛠️ Exception Handling
+#### 4. **Business Logic Errors**
+- ✅ User already exists
+- ✅ Invalid email format
+- ✅ Email sending failures
+- ✅ Email confirmation errors
+- ✅ Role not found errors
 
-### Professional Error Responses
-All API errors return consistent JSON format:
+#### 5. **Validation Errors**
+- ✅ Field validation failures
+- ✅ Invalid field values
+- ✅ Argument validation errors
+
+### Error Response Format
+All errors return a consistent JSON structure:
 ```json
 {
   "error": {
-    "message": "User not found with ID: 123",
-    "status": 404,
-    "timestamp": "2025-07-24T21:30:00"
+    "message": "Descriptive error message",
+    "statusCode": 404,
+    "timestamp": "2025-07-25T21:30:45"
   }
 }
 ```
 
-### Supported Error Scenarios
-- **404 Not Found**: Missing resources or endpoints
-- **400 Bad Request**: Invalid path parameters, malformed requests
-- **405 Method Not Allowed**: Wrong HTTP methods
-- **409 Conflict**: Duplicate resources (email already exists)
-- **415 Unsupported Media Type**: Wrong Content-Type headers
-- **500 Internal Server Error**: Unexpected server errors
+### Professional Error Messages Examples
 
-## 📋 Registration Flows
-
-### Company Registration Process
-1. **Input Validation**: Company details + admin user information
-2. **Duplicate Check**: Verify unique company name and admin email
-3. **Entity Creation**: Create Company and Admin User entities
-4. **Role Assignment**: Assign appropriate roles (COMPANY_ADMIN)
-5. **Email Confirmation**: Send verification email to admin
-6. **Response**: Professional success/error responses
-
-### Buyer Registration Process  
-1. **Input Validation**: Personal details + address information
-2. **Duplicate Check**: Verify unique email address
-3. **User Creation**: Create User entity with BUYER role
-4. **Address Handling**: Store complete address details
-5. **Email Confirmation**: Send account activation email
-6. **Response**: Secure registration confirmation
-
-## 🗃️ Data Models
-
-### User Entity
-```java
-@Entity
-public class User {
-    private Long id;
-    private String fullName;
-    private String email;
-    private String phone;
-    private UserType userType;      // BUYER, SELLER, ADMIN
-    private AccountStatus status;   // ACTIVE, PENDING, SUSPENDED
-    
-    // Address fields for buyers
-    private String addressStreet;
-    private String addressCity;
-    private String addressState;
-    private String addressPostalCode;
-    private String addressCountry;
-    
-    // Relationships
-    @ManyToOne Company company;     // For company users
-    @ManyToMany Set<Role> roles;    // Role-based permissions
+**Non-existent Endpoint:**
+```http
+GET /api/nonexistent
+HTTP/1.1 404 Not Found
+{
+  "error": {
+    "message": "API endpoint 'GET /api/nonexistent' does not exist. Please check the API documentation for valid endpoints.",
+    "statusCode": 404,
+    "timestamp": "2025-07-25T21:30:45"
+  }
 }
 ```
 
-### Company Entity
-```java
-@Entity
-public class Company {
-    private Long id;
-    private String name;
-    private String description;
-    private String industry;
-    
-    // Company address
-    private String addressStreet;
-    private String addressCity;
-    private String addressState;
-    private String addressPostalCode;
-    private String addressCountry;
-    
-    // Business details
-    private String website;
-    private String phone;
+**Wrong HTTP Method:**
+```http
+DELETE /api/auth/login
+HTTP/1.1 405 Method Not Allowed
+{
+  "error": {
+    "message": "HTTP method 'DELETE' is not supported for this endpoint. Supported methods: GET, POST",
+    "statusCode": 405,
+    "timestamp": "2025-07-25T21:30:45"
+  }
 }
 ```
 
-## 🔧 Development Best Practices
+**Service Unavailable (Admin Paths):**
+```http
+GET /api/admin/secret-endpoint
+HTTP/1.1 503 Service Unavailable
+{
+  "error": {
+    "message": "The requested path '/api/admin/secret-endpoint' is not available. Please check the API documentation for valid endpoints.",
+    "statusCode": 503,
+    "timestamp": "2025-07-25T21:30:45"
+  }
+}
+```
 
-### ModelMapper Integration
-- **Hybrid Approach**: ModelMapper for simple fields + custom logic for complex mappings
-- **Configuration**: Strict matching strategy to prevent unexpected mappings
-- **Custom Mappings**: Proper handling of field name mismatches (fullName → name)
+## 🎯 Best Practices Implemented
 
-### Exception Strategy
-- **Custom Exceptions**: Specific exceptions for different business scenarios
-- **Global Handler**: Centralized exception handling with consistent responses
-- **Security**: No stack trace exposure to clients
-- **Logging**: Comprehensive error logging for debugging
+### 1. **Exception Hierarchy**
+```
+Exception
+├── RuntimeException
+    ├── UserAlreadyExistsException
+    ├── EndpointNotFoundException
+    ├── ServiceUnavailableException
+    ├── InvalidFieldException
+    └── ... (business-specific exceptions)
+```
 
-### API Design Principles
-- **RESTful URLs**: Clear, resource-based endpoint structure
-- **HTTP Status Codes**: Proper status codes for different scenarios
-- **Request/Response DTOs**: Clean separation between API and domain models
-- **Validation**: Comprehensive input validation with descriptive error messages
+### 2. **HTTP Status Code Usage**
+- **200 OK**: Successful operations
+- **201 Created**: Resource creation success
+- **400 Bad Request**: Client-side validation errors
+- **401 Unauthorized**: Authentication required
+- **403 Forbidden**: Access denied
+- **404 Not Found**: Resource/endpoint not found
+- **405 Method Not Allowed**: Wrong HTTP method
+- **409 Conflict**: Resource conflict (user exists)
+- **415 Unsupported Media Type**: Wrong content type
+- **503 Service Unavailable**: Service temporarily unavailable
+
+### 3. **Error Handling Configuration**
+```properties
+# Enable comprehensive error handling
+spring.mvc.throw-exception-if-no-handler-found=true
+spring.web.resources.add-mappings=false
+server.error.include-message=always
+server.error.include-binding-errors=always
+```
+
+### 4. **Professional Exception Classes**
+- Custom exceptions for specific business scenarios
+- Factory methods for common error patterns
+- Detailed error messages for debugging
+- Consistent error response structure
 
 ## 🧪 Testing Strategy
 
-### Test Structure
-- **Unit Tests**: Service layer business logic testing
-- **Integration Tests**: Controller and repository testing
-- **Mock Testing**: Using Mockito for dependency isolation
+### Error Handling Tests
+- ✅ Unit tests for each exception type
+- ✅ Integration tests for wrong path scenarios
+- ✅ Security bypass testing with `@WithMockUser`
+- ✅ Response format validation
+- ✅ HTTP status code verification
 
-### Test Examples
-```java
-@ExtendWith(MockitoExtension.class)
-class RegisterBuyerControllerTest {
-    @Mock RegisterBuyerService service;
-    @InjectMocks RegisterBuyerController controller;
-    
-    @Test
-    void registerBuyer_success() throws Exception {
-        // Test implementation
-    }
-}
+### Test Coverage Areas
+1. **Path Validation Tests**
+2. **HTTP Method Validation Tests**
+3. **Media Type Validation Tests**
+4. **Request Body Validation Tests**
+5. **Security Exception Tests**
+6. **Business Logic Exception Tests**
+
+## 🔧 Configuration
+
+### Application Properties
+```properties
+# Error Handling Configuration
+spring.mvc.throw-exception-if-no-handler-found=true
+spring.web.resources.add-mappings=false
+server.error.include-message=always
+server.error.include-binding-errors=always
+server.error.include-stacktrace=on_param
+server.error.include-exception=false
 ```
-
-## 🚀 Getting Started
-
-### Prerequisites
-- Java 21+
-- PostgreSQL 12+
-- Gradle 8.x
-
-### Setup Instructions
-1. **Clone Repository**
-   ```bash
-   git clone <repository-url>
-   cd backend-app
-   ```
-
-2. **Database Configuration**
-   ```properties
-   # application.properties
-   spring.datasource.url=jdbc:postgresql://localhost:5432/b2b_ecommerce
-   spring.datasource.username=your_username
-   spring.datasource.password=your_password
-   ```
-
-3. **Build & Run**
-   ```bash
-   ./gradlew clean build
-   ./gradlew bootRun
-   ```
-
-4. **Run Tests**
-   ```bash
-   ./gradlew test
-   ```
-
-## 📚 API Documentation
-
-### Authentication Endpoints
-- `POST /auth/login` - User authentication with enhanced response
-- `GET /auth/confirm-email?token=...` - Email confirmation
-- `POST /auth/resend-confirmation` - Resend confirmation email
-
-### Registration Endpoints
-- `POST /api/companies/register` - Company registration
-- `POST /api/buyers/register` - Buyer registration
-
-### User Management
-- `GET /api/user/{userId}/profile` - Get user profile
-- `PUT /api/user/{userId}/profile` - Update user profile
-- `GET /api/user/{userId}/settings` - Get user settings
-
-### Error Handling Examples
-```bash
-# Invalid user ID
-GET /api/user/-5/profile
-# Response: 400 Bad Request
-
-# Non-existent endpoint  
-GET /api/user/123/invalidpath
-# Response: 400 Bad Request with helpful message
-
-# Wrong HTTP method
-DELETE /api/user/123/profile  
-# Response: 405 Method Not Allowed
-```
-
-## 🔒 Security Considerations
-
-### JWT Token Security
-- **No Email Exposure**: Login responses exclude sensitive email information
-- **Token Expiration**: Clear expiry handling for frontend applications
-- **Secure Claims**: Minimal claims in JWT payload
-
-### Input Validation
-- **Path Parameter Validation**: User ID range and format validation
-- **Business Rule Validation**: Reasonable limits and constraints
-- **SQL Injection Prevention**: Parameterized queries via JPA
-
-### Error Response Security
-- **No Stack Traces**: Clean error messages without technical details
-- **Consistent Format**: Standardized error response structure
-- **Audit Logging**: Request tracking for security monitoring
-
-## 🤝 Contributing
-
-### Code Standards
-- **Java Conventions**: Follow standard Java naming conventions
-- **Documentation**: Comprehensive JavaDoc for public APIs
-- **Testing**: Minimum 80% code coverage for new features
-- **Exception Handling**: Use appropriate custom exceptions
-
-### Git Workflow
-- **Feature Branches**: Create branches for new features
-- **Descriptive Commits**: Clear, descriptive commit messages
-- **Code Review**: All changes require review before merge
-
----
-
-**Built with ❤️ using Spring Boot, following enterprise-grade best practices for B2B e-commerce solutions.**
