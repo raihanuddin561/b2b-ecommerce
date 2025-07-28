@@ -43,7 +43,8 @@ public class RegisterBuyerService {
             throw new UserAlreadyExistsException("A user with this email already exists.");
         }
         // Prepare user entity
-        User user = new User();
+        User user = User
+                .builder().build();
         user.setFullName(request.fullName().trim());
         user.setEmail(request.email().trim());
         user.setPassword(passwordEncoder.encode(request.password().trim()));

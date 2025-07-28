@@ -84,7 +84,7 @@ public class RegisterCompanyService {
 
         try {
             // 6. Prepare and sanitize company entity
-            Company company = new Company();
+            Company company = Company.builder().build();
             company.setName(request.companyName().trim());
             company.setRegistrationNumber(request.registrationNumber().trim());
             company.setCompanyType(request.companyType() != null ? request.companyType().trim() : null);
@@ -105,7 +105,7 @@ public class RegisterCompanyService {
                     .orElseThrow(() -> new RoleIsNotFoundException(ROLE_IS_NOT_FOUND.getMessage()));
 
             // 8. Prepare and sanitize admin user entity
-            User user = new User();
+            User user = User.builder().build();
             user.setFullName(request.adminName().trim());
             user.setEmail(request.adminEmail().trim());
             user.setPassword(passwordEncoder.encode(request.adminPassword().trim()));

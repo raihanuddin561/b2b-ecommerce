@@ -1,6 +1,7 @@
 package com.dealkartbd.backend_app.entity;
 
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Data;
 
 import java.util.ArrayList;
@@ -8,6 +9,7 @@ import java.util.List;
 
 @Data
 @Entity
+@Builder
 @Table(name = "companies")
 public class Company {
     @Id

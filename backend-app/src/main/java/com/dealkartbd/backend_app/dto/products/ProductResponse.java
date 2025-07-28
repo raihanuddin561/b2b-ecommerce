@@ -14,5 +14,6 @@ public class ProductResponse {
     private double price;
     private int minOrderQuantity;
     private String imageUrl;
+    private Long companyId;
     private String companyName;
 }
